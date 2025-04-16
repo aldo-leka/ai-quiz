@@ -1,0 +1,26 @@
+{
+  "name": "ai-quiz",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared",
+    "quiz-generator"
+  ],
+  "scripts": {
+    "dev": "npm run build:libs && concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspaces",
+    "build:libs": "npm run build --workspace=shared && npm run build --workspace=quiz-generator",
+    "start": "npm run start --workspace=server",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "setup": "npm install && npm run build:libs"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}

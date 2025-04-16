@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  name       String
+  avatar_url String?
+  credits    Int      @default(0)
+  created_at DateTime @default(now())
+  quizzes    Quiz[]
+  games      Game[]
+}
+
+model Quiz {
+  id           String         @id @default(uuid())
+  title        String
+  description  String
+  theme        String
+  type         String
+  questions    Question[]
+  created_by   User           @relation(fields: [created_by_id], references: [id])
+  created_by_id String
+  created_at   DateTime       @default(now())
+  image_url    String?
+  document_url String?
+  games        Game[]
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  text          String
+  type          String
+  options       String[]
+  correct_answer String[]
+  explanation   String?
+  time_limit    Int?
+  image_url     String?
+  quiz          Quiz     @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  quiz_id       String
+  answers       Answer[]
+}
+
+model Game {
+  id                   String   @id @default(uuid())
+  code                 String   @unique
+  host                 User     @relation(fields: [host_id], references: [id])
+  host_id              String
+  status               String   @default("lobby")
+  quiz                 Quiz?    @relation(fields: [quiz_id], references: [id])
+  quiz_id              String?
+  current_question_index Int?
+  started_at           DateTime?
+  ended_at             DateTime?
+  players              Player[]
+  answers              Answer[]
+  created_at           DateTime @default(now())
+}
+
+model Player {
+  id          String   @id @default(uuid())
+  name        String
+  avatar      String
+  score       Int      @default(0)
+  is_connected Boolean  @default(true)
+  is_host     Boolean  @default(false)
+  game        Game     @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  game_id     String
+  socket_id   String?
+  answers     Answer[]
+  created_at  DateTime @default(now())
+
+  @@unique([game_id, name])
+}
+
+model Answer {
+  id          String    @id @default(uuid())
+  player      Player    @relation(fields: [player_id], references: [id], onDelete: Cascade)
+  player_id   String
+  question    Question  @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id String
+  game        Game      @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  game_id     String
+  answer      String[]
+  is_correct  Boolean
+  time_to_answer Int?
+  created_at  DateTime  @default(now())
+
+  @@unique([player_id, question_id, game_id])
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  user_id          String
+  stripe_session_id String   @unique
+  amount           Int
+  credits          Int
+  status           String
+  created_at       DateTime @default(now())
+  completed_at     DateTime?
+}
