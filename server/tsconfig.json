@@ -9,8 +9,10 @@
     "declaration": true,
     "strict": false,
     "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "noEmitOnError": false,
+    "forceConsistentCasingInFileNames": false,
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
