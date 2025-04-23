@@ -14,10 +14,15 @@ const envVars = [
   'NEXT_PUBLIC_STRIPE_PUBLIC_KEY'
 ];
 
+// Log available environment variables
+console.log('Available environment variables:');
+console.log('Process env keys:', Object.keys(process.env));
+
 // Create the .env content by reading from process.env
 const envFileContent = envVars
   .map(key => {
     const value = process.env[key] || '';
+    console.log(`Reading env var ${key}: ${value ? 'Value found' : 'Empty'}`);
     return `${key}=${value}`;
   })
   .join('\n');
