@@ -33,6 +33,7 @@ export interface GameSession {
   questionResults?: QuestionResult[];
   createdAt?: string;
   lastActivityAt?: string;
+  nextGameOptions?: string[];
 }
 
 export interface QuizQuestion {
@@ -151,12 +152,14 @@ export interface QuestionResult {
 }
 
 export interface GameResult {
-  gameId: string;
+  gameId?: string;
+  gameCode?: string;
   quizId: string;
-  players: Player[];
-  questionResults: QuestionResult[];
-  startedAt: string;
-  endedAt: string;
+  players?: Player[];
+  leaderboard?: any[];
+  questionResults?: QuestionResult[];
+  startedAt?: string;
+  endedAt?: string;
 }
 
 export interface Error {

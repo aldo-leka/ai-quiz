@@ -13,7 +13,7 @@ import { GameStateManager } from './managers/GameStateManager';
 export class GameSessionManager {
   private sessionManager: SessionManager;
   private playerManager: PlayerManager;
-  private timerManager: TimerManager;
+  public timerManager: TimerManager;
   private questionManager: QuestionManager;
   private gameStateManager: GameStateManager;
   

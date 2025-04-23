@@ -95,7 +95,9 @@ export function setupQuizRoutes(app: Express) {
         documentUrl,
         questionCount: Math.min(questionCount, 15), // Cap at 15 questions
         type,
-        timeLimit // Include the timeLimit parameter
+        timeLimit, // Include the timeLimit parameter
+        theme: 'Document-based Quiz', // Default theme for document-based quizzes
+        aiService: 'openai' // Default to OpenAI for document processing
       });
       
       // Add user ID to the quiz

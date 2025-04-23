@@ -1,7 +1,7 @@
 import { initTRPC } from '@trpc/server';
-import { CreateTRPCContextOptions } from '@trpc/server/adapters/express';
+import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 
-export function createTRPCContext(opts: CreateTRPCContextOptions) {
+export function createTRPCContext(opts: CreateExpressContextOptions) {
   return {};
 }
 
