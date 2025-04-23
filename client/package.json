@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "create-env": "node -e \"require('fs').writeFileSync('.env.local', Object.entries(process.env).filter(([key]) => key.startsWith('NEXT_PUBLIC_')).map(([key, val]) => `${key}=${val}`).join('\\n'))\"",
+    "build-with-deps": "cd ../shared && npm i && npm run build && cd ../quiz-generator && npm i && npm run build && cd ../client && npm i && npm link ../shared && npm link ../quiz-generator && npm run create-env && npm run build"
   },
   "dependencies": {
     "@stripe/stripe-js": "^2.2.0",
