@@ -7,12 +7,15 @@
   --background-rgb: 255, 255, 255;
 }
 
+/* Disable dark mode styling */
+/*
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
     --background-rgb: 30, 30, 30;
   }
 }
+*/
 
 body {
   color: rgb(var(--foreground-rgb));
