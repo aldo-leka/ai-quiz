@@ -29,6 +29,8 @@ const outputPath = path.resolve(__dirname, '..', '.env');
 try {
   fs.writeFileSync(outputPath, envFileContent);
   console.log('✅ Client .env file created successfully!');
+  console.log('📄 Client .env file contents:');
+  console.log(envFileContent);
 } catch (error) {
   console.error('❌ Error creating client .env file:', error);
   process.exit(1);

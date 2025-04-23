@@ -37,6 +37,8 @@ const outputPath = path.resolve(__dirname, '..', '.env');
 try {
   fs.writeFileSync(outputPath, envFileContent);
   console.log('✅ Server .env file created successfully!');
+  console.log('📄 Server .env file contents:');
+  console.log(envFileContent);
 } catch (error) {
   console.error('❌ Error creating server .env file:', error);
   process.exit(1);
