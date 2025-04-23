@@ -4,7 +4,9 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "outDir": "./dist",
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "declaration": true,
     "strict": false,
     "noImplicitAny": false,
     "skipLibCheck": true,
@@ -12,19 +14,19 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "shared": ["../shared"],
-      "shared/*": ["../shared/*"],
-      "quiz-generator": ["../quiz-generator"],
-      "quiz-generator/*": ["../quiz-generator/src/*"]
+      "shared": ["../shared/dist"],
+      "shared/*": ["../shared/dist/*"],
+      "quiz-generator": ["../quiz-generator/dist"],
+      "quiz-generator/*": ["../quiz-generator/dist/*"]
     },
     "composite": true,
     "sourceMap": true,
-    "declaration": true
+    "rootDir": "src"
   },
   "references": [
     { "path": "../shared" },
     { "path": "../quiz-generator" }
   ],
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

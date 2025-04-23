@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "build": "tsc -b",
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
     "typecheck": "tsc --noEmit",
     "create-env": "node scripts/create-env.js",
-    "build-with-deps": "cd ../shared && npm i && npm run build && cd ../quiz-generator && npm i && npm run build && cd ../server && npm i && npm link ../shared && npm link ../quiz-generator && npm run create-env && npm run build"
+    "build-with-deps": "npm run build -w shared && npm run build -w quiz-generator && npm run create-env && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.9.1",
@@ -32,7 +32,9 @@
     "socket.io": "^4.7.2",
     "stripe": "^14.8.0",
     "uuid": "^9.0.1",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "shared": "*",
+    "quiz-generator": "*"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

@@ -3,22 +3,24 @@
     "target": "es2018",
     "module": "commonjs",
     "declaration": true,
-    "outDir": "./dist",
+    "declarationDir": "dist",
+    "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "shared": ["../shared"],
-      "shared/*": ["../shared/*"]
+      "shared": ["../shared/dist"],
+      "shared/*": ["../shared/dist/*"]
     },
     "composite": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "rootDir": "src"
   },
   "references": [
     { "path": "../shared" }
   ],
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
