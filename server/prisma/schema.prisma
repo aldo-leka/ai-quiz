@@ -27,6 +27,7 @@ model Quiz {
   description  String
   theme        String
   type         String
+  time_limit   Int?           // Time limit in seconds for each question
   questions    Question[]
   created_by   User           @relation(fields: [created_by_id], references: [id])
   created_by_id String
@@ -43,7 +44,6 @@ model Question {
   options       String[]
   correct_answer String[]
   explanation   String?
-  time_limit    Int?
   image_url     String?
   quiz          Quiz     @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
   quiz_id       String

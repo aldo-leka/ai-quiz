@@ -10,7 +10,8 @@ export async function generateQuizFromDocumentContent(
   documentUrl: string,
   type: QuizType,
   questionCount: number,
-  aiService: AiService
+  aiService: AiService,
+  timeLimit?: number
 ): Promise<Quiz> {
   try {
     // Fetch and process the document
@@ -23,9 +24,9 @@ export async function generateQuizFromDocumentContent(
     let quiz: Quiz;
     
     if (aiService === 'claude') {
-      quiz = await generateQuizWithClaude(theme, type, questionCount);
+      quiz = await generateQuizWithClaude(theme, type, questionCount, timeLimit);
     } else {
-      quiz = await generateQuizWithOpenAI(theme, type, questionCount);
+      quiz = await generateQuizWithOpenAI(theme, type, questionCount, timeLimit);
     }
     
     // Set document URL in the quiz object

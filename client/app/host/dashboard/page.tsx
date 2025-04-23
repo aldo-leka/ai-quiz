@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Quiz } from 'shared';
 import { getCurrentUser } from '@/lib/supabase/auth';
+import { ActiveGames } from '@/components/host';
 
 // Mock data for quizzes
 const mockQuizzes: Quiz[] = [
@@ -41,21 +42,26 @@ export default function Dashboard() {
   // Load user and quizzes on component mount
   useEffect(() => {
     async function loadData() {
-      const userData = await getCurrentUser();
-      if (!userData) {
-        // Redirect to login if not authenticated
-        router.push('/auth/login');
-        return;
-      }
-      
-      setUser(userData);
-      
-      // In a real app, this would fetch quizzes from an API
-      // For now, we'll use mock data
-      setTimeout(() => {
-        setQuizzes(mockQuizzes);
+      try {
+        const userData = await getCurrentUser();
+        if (!userData) {
+          // Redirect to login if not authenticated
+          router.push('/auth/login');
+          return;
+        }
+        
+        setUser(userData);
+        
+        // Fetch quizzes from the API
+        const { fetchQuizzes } = await import('@/lib/api');
+        const userQuizzes = await fetchQuizzes();
+        
+        setQuizzes(userQuizzes);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
     }
     
     loadData();
@@ -78,20 +84,25 @@ export default function Dashboard() {
   
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-500 to-purple-700 p-4 py-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">
-              My Quizzes
-            </h1>
-            
-            <Link 
-              href="/host"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-              Create New Quiz
-            </Link>
-          </div>
+      <div className="max-w-4xl mx-auto">
+        {/* Active Games Section */}
+        {/* <ActiveGames /> */}
+        
+        {/* My Quizzes Section */}
+        <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">
+                My Quizzes
+              </h1>
+              
+              <Link 
+                href="/host"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                Create New Quiz
+              </Link>
+            </div>
           
           {quizzes.length === 0 ? (
             <div className="text-center py-10">
@@ -130,6 +141,17 @@ export default function Dashboard() {
                           <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
                             {quiz.theme}
                           </span>
+                          <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                            {quiz.questions.length} Questions
+                          </span>
+                          {quiz.timeLimit && (
+                            <span className="px-2 py-1 bg-rose-100 text-rose-800 text-xs rounded-full flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                              </svg>
+                              {quiz.timeLimit}s
+                            </span>
+                          )}
                         </div>
                         
                         <div className="flex space-x-2">
@@ -153,6 +175,7 @@ export default function Dashboard() {
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
     </main>
@@ -164,7 +187,6 @@ function formatQuizType(type: string): string {
     case 'multiple_choice': return 'Multiple Choice';
     case 'true_false': return 'True/False';
     case 'flashcards': return 'Flashcards';
-    case 'timed': return 'Timed Quiz';
     case 'fill_in_blank': return 'Fill in the Blank';
     default: return type;
   }

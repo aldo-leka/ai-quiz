@@ -4,28 +4,35 @@ import { getQuizPrompt } from '../templates/prompts';
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
 export async function generateQuizWithClaude(
   theme: string,
   type: QuizType,
-  questionCount: number
+  questionCount: number,
+  timeLimit?: number
 ): Promise<Quiz> {
   // Get the appropriate prompt based on quiz type
-  const prompt = getQuizPrompt(type, theme, questionCount);
+  const prompt = getQuizPrompt(type, theme, questionCount, timeLimit);
   
   try {
-    // Call Claude API to generate quiz
-    const response = await anthropic.completions.create({
-      model: 'claude-3-opus-20240229',
-      max_tokens_to_sample: 4000,
+    // Call Claude API to generate quiz (using new messages API format)
+    const response = await anthropic.messages.create({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 4000,
       temperature: 0.7,
-      prompt: `${prompt}\n\nHuman: Please create this quiz. Make sure to format your response as valid JSON.\n\nAssistant:`,
+      system: "You are an expert quiz creator who creates educational and engaging quizzes. Always respond with valid JSON.",
+      messages: [
+        {
+          role: "user",
+          content: `${prompt} Please create this quiz. Make sure to format your response as valid JSON.`
+        }
+      ]
     });
     
     // Parse the response
-    const responseContent = response.completion;
+    const responseContent = response.content[0].type === 'text' ? response.content[0].text : '';
     if (!responseContent) {
       throw new Error('No content in response');
     }
@@ -52,6 +59,7 @@ export async function generateQuizWithClaude(
       createdById: '',  // This will be filled in by the server
       createdAt: new Date().toISOString(),
       imageUrl: undefined, // This will be generated separately if needed
+      timeLimit: timeLimit, // Include the time limit if specified
     };
     
     return quiz;
@@ -73,7 +81,6 @@ function transformQuestion(question: any, quizType: QuizType): QuizQuestion {
     type: mapQuizTypeToQuestionType(quizType),
     correctAnswer: question.correctAnswer || question.answer,
     explanation: question.explanation,
-    timeLimit: question.timeLimit,
     image_url: question.imageUrl,
   };
   
@@ -95,8 +102,6 @@ function mapQuizTypeToQuestionType(quizType: QuizType): 'multiple_choice' | 'tru
       return 'short_answer';
     case 'fill_in_blank':
       return 'fill_in_blank';
-    case 'timed':
-      return 'multiple_choice';
     default:
       return 'multiple_choice';
   }

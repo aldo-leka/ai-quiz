@@ -22,9 +22,9 @@ export async function generateQuiz(request: CreateQuizRequest): Promise<Quiz> {
   // Choose AI service based on request
   try {
     if (aiService === 'claude') {
-      return await generateQuizWithClaude(theme, type, questionCount);
+      return await generateQuizWithClaude(theme, type, questionCount, request.timeLimit);
     } else {
-      return await generateQuizWithOpenAI(theme, type, questionCount);
+      return await generateQuizWithOpenAI(theme, type, questionCount, request.timeLimit);
     }
   } catch (error) {
     console.error('Error generating quiz:', error);
@@ -53,7 +53,7 @@ export async function generateQuizFromDocument(request: CreateQuizRequest): Prom
   
   try {
     // Process document and generate quiz
-    return await generateQuizFromDocumentContent(documentUrl, type, questionCount, aiService as AiService);
+    return await generateQuizFromDocumentContent(documentUrl, type, questionCount, aiService as AiService, request.timeLimit);
   } catch (error) {
     console.error('Error generating quiz from document:', error);
     throw new Error('Failed to generate quiz from document');

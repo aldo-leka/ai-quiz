@@ -37,14 +37,18 @@ export default function Credits() {
     setIsProcessing(true);
     
     try {
-      // In a real implementation, this would call an API to create a Stripe checkout session
-      console.log(`Purchasing ${selectedPackage} package`);
+      const packageInfo = CREDIT_PACKAGES[selectedPackage];
       
-      // Simulate API call
-      setTimeout(() => {
-        // This would redirect to Stripe checkout
-        router.push('/host/credits/success');
-      }, 1500);
+      // Create a checkout session through the API
+      const { createCheckoutSession } = await import('@/lib/api');
+      const session = await createCheckoutSession(packageInfo.amount);
+      
+      if (session?.url) {
+        // Redirect to Stripe checkout
+        window.location.href = session.url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
     } catch (error) {
       console.error('Error creating checkout session:', error);
       setIsProcessing(false);

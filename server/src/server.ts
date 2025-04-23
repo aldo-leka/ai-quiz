@@ -8,7 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 
 import { setupRoutes } from './api/rest';
-import { setupSocketHandlers } from './api/ws';
+import { setupSocketHandlers } from './api/ws/gameMonolith';
 import { createTRPCContext, appRouter } from './api/trpc';
 
 const PORT = process.env.PORT || 3001;

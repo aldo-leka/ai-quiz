@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { EVENTS } from 'shared';
+import { getCurrentUser } from '@/lib/supabase/auth';
 
 export default function JoinGame() {
   const searchParams = useSearchParams();
@@ -22,38 +23,88 @@ export default function JoinGame() {
       return;
     }
     
-    // Connect to the Socket.IO server
-    const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
-    setSocket(socketInstance);
+    // Load the current user for authentication (if logged in)
+    let userId: string | undefined;
     
-    // Setup event listeners
-    socketInstance.on(EVENTS.CONNECT, () => {
-      setStatus('connected');
-      
-      // Join the game
-      socketInstance.emit(EVENTS.JOIN_GAME, {
-        gameCode,
-        playerName,
-        playerAvatar
+    async function init() {
+      try {
+        // Check if user is logged in
+        const userData = await getCurrentUser();
+        userId = userData?.id;
+        
+        // Connect to the Socket.IO server
+        const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+        setSocket(socketInstance);
+        
+        // Setup event listeners
+        socketInstance.on(EVENTS.CONNECT, () => {
+          setStatus('connected');
+          console.log(`DEBUG: Player socket connected with ID ${socketInstance.id}`);
+          
+          // Check if game is already in progress (if coming from a refresh)
+          if (searchParams.get('reconnect') === 'true') {
+            console.log(`DEBUG: Attempting to reconnect to game ${gameCode} as ${playerName}`);
+            
+            // Use our special reconnect handler
+            socketInstance.emit('reconnect_player', {
+              gameCode,
+              playerName,
+              playerAvatar,
+              userId
+            });
+          } else {
+            console.log(`DEBUG: Joining new game ${gameCode} as ${playerName}`);
+            
+            // Join the game as a new player
+            socketInstance.emit(EVENTS.JOIN_GAME, {
+              gameCode,
+              playerName,
+              playerAvatar,
+              userId
+            });
+          }
+        });
+        
+        // Set up the rest of the event listeners
+        setupEventListeners(socketInstance);
+      } catch (error) {
+        console.error("Error initializing:", error);
+        setError("Failed to initialize the game connection");
+        setStatus('error');
+      }
+    }
+    
+    // Helper function to set up all the socket event listeners
+    function setupEventListeners(socketInstance: Socket) {
+      socketInstance.on(EVENTS.PLAYER_JOINED, () => {
+        setStatus('joined');
       });
-    });
+      
+      socketInstance.on(EVENTS.GAME_STARTED, () => {
+        console.log(`DEBUG: Game started, navigating to game page with reconnect=true flag`);
+        router.push(`/game?code=${gameCode}&name=${encodeURIComponent(playerName)}&avatar=${encodeURIComponent(playerAvatar)}&reconnect=true`);
+      });
+      
+      socketInstance.on(EVENTS.ERROR, (data) => {
+        // Special handling for host-player conflicts
+        if (data.code === 'HOST_ATTEMPT_JOIN_AS_PLAYER') {
+          // Redirect to the host game page with resume=true
+          router.push(`/host/game?code=${gameCode}&resume=true`);
+          return;
+        }
+        
+        setError(data.message);
+        setStatus('error');
+      });
+    }
     
-    socketInstance.on(EVENTS.PLAYER_JOINED, () => {
-      setStatus('joined');
-    });
-    
-    socketInstance.on(EVENTS.GAME_STARTED, () => {
-      router.push(`/game?code=${gameCode}`);
-    });
-    
-    socketInstance.on(EVENTS.ERROR, (data) => {
-      setError(data.message);
-      setStatus('error');
-    });
+    init();
     
     // Cleanup on unmount
     return () => {
-      socketInstance.disconnect();
+      if (socket) {
+        socket.disconnect();
+      }
     };
   }, [gameCode, playerName, playerAvatar, router]);
   

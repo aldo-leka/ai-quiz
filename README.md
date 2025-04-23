@@ -98,6 +98,14 @@ npm run dev
 
 The project uses Supabase PostgreSQL. The database schema is defined in `/server/db/schema.sql`. Make sure to run this script in your Supabase SQL Editor before starting the application.
 
+### Database Migrations
+
+When needed, database migrations can be found in `/server/db/migrations/`. Apply them in numeric order to update your database schema.
+
+#### Current Migrations
+
+1. `001_add_transaction_functions.sql` - Adds transaction support, necessary columns for game state persistence, and the time_limit column for timed quizzes.
+
 ## License
 
 MIT

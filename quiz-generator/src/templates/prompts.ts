@@ -3,8 +3,13 @@ import { QuizType } from 'shared';
 /**
  * Returns the appropriate prompt for generating a quiz based on the type
  */
-export function getQuizPrompt(type: QuizType, theme: string, questionCount: number): string {
-  const basePrompt = `Create a ${type} quiz about ${theme} with ${questionCount} questions. Return the response as a JSON object with the following structure:
+export function getQuizPrompt(type: QuizType, theme: string, questionCount: number, timeLimit?: number): string {
+  const timedInstructions = timeLimit 
+    ? `This is a timed quiz with ${timeLimit} seconds per question.` 
+    : '';
+  
+  const basePrompt = `Create a ${type} quiz about ${theme} with ${questionCount} questions. ${timedInstructions}
+  Return the response as a JSON object with the following structure:
   {
     "title": "Quiz title",
     "description": "Brief description of the quiz",
@@ -46,15 +51,6 @@ export function getQuizPrompt(type: QuizType, theme: string, questionCount: numb
       - No options are needed
       - The correctAnswer should be the comprehensive answer/definition
       - Make the answers informative but concise
-      `;
-      
-    case 'timed':
-      return basePrompt + `
-      For timed questions:
-      - Questions should be designed to be answered quickly
-      - Each question should have exactly 4 options
-      - Include a "timeLimit" field for each question (in seconds, between 10-30)
-      - Vary the difficulty and time limits throughout the quiz
       `;
       
     case 'fill_in_blank':

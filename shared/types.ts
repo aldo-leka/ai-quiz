@@ -8,24 +8,31 @@ export interface User {
 }
 
 export interface Player {
-  id: string;
+  id: string;      // Socket ID (connection-specific)
   name: string;
   avatar: string;
   score: number;
   isConnected: boolean;
   isHost: boolean;
+  userId?: string; // Database user ID (persistent)
 }
 
 export interface GameSession {
   id: string;
   code: string;
-  hostId: string;
+  hostId: string;              // Socket ID of host
+  hostUserId?: string;         // Database user ID of host
+  hostDisconnectedAt?: string; // Timestamp when host disconnected
   status: GameStatus;
   players: Player[];
   currentQuizId?: string;
   currentQuestionIndex: number;
   startedAt?: string;
   endedAt?: string;
+  playerAnswers?: PlayerAnswer[];
+  questionResults?: QuestionResult[];
+  createdAt?: string;
+  lastActivityAt?: string;
 }
 
 export interface QuizQuestion {
@@ -35,8 +42,10 @@ export interface QuizQuestion {
   options?: string[];
   correctAnswer: string | string[];
   explanation?: string;
-  timeLimit?: number; // in seconds
   image_url?: string;
+  // Flashcard-specific fields
+  front?: string;
+  back?: string;
 }
 
 export interface Quiz {
@@ -50,6 +59,7 @@ export interface Quiz {
   createdAt: string;
   imageUrl?: string;
   documentUrl?: string;
+  timeLimit?: number; // Time limit in seconds for each question (default: 30)
 }
 
 export type GameStatus = 
@@ -63,26 +73,29 @@ export type QuizType =
   | 'multiple_choice'
   | 'true_false'
   | 'flashcards' 
-  | 'timed'
   | 'fill_in_blank';
 
 export type QuestionType = 
   | 'multiple_choice'
   | 'true_false'
   | 'short_answer'
-  | 'fill_in_blank';
+  | 'fill_in_blank'
+  | 'flashcard';
 
 export type AiService = 'openai' | 'claude';
 
 export interface CreateGameRequest {
   hostName: string;
   hostAvatar: string;
+  hostUserId?: string; // Optional user ID from auth system
+  quizId?: string;
 }
 
 export interface JoinGameRequest {
   gameCode: string;
   playerName: string;
   playerAvatar: string;
+  userId?: string; // Optional user ID for authentication
 }
 
 export interface CreateQuizRequest {
@@ -91,6 +104,7 @@ export interface CreateQuizRequest {
   questionCount: number;
   aiService: AiService;
   documentUrl?: string;
+  timeLimit?: number; // Time limit in seconds for each question (default: 30)
 }
 
 export interface GenerateQuizThemesRequest {

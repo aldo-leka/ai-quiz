@@ -13,12 +13,12 @@ export default function Lobby() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [players, setPlayers] = useState<{id: string, name: string, avatar: string}[]>([]);
+  const [players, setPlayers] = useState<{ id: string, name: string, avatar: string }[]>([]);
   const [roomCode, setRoomCode] = useState<string>('');
   const [error, setError] = useState<string>('');
-  
+
   const quizId = searchParams.get('quizId');
-  
+
   // Load user and setup game on component mount
   useEffect(() => {
     async function init() {
@@ -28,69 +28,70 @@ export default function Lobby() {
         router.push('/auth/login');
         return;
       }
-      
+
       setUser(userData);
-      
+
       // Connect to Socket.io server
       const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
       setSocket(socketInstance);
-      
+
       // Setup event listeners
       socketInstance.on(EVENTS.CONNECT, () => {
         console.log('Connected to game server');
-        
-        // Create a new game session
+
         socketInstance.emit(EVENTS.CREATE_GAME, {
           hostName: userData.name,
           hostAvatar: userData.avatar_url || '👨‍💻',
-          quizId: quizId || 'none' // If quizId is provided, use it; otherwise use 'none'
+          hostUserId: userData.id, // Send the user's ID for persistence
+          quizId: quizId || undefined
         });
       });
-      
+
       // Handle game created event
-      socketInstance.on(EVENTS.GAME_CREATED, (data: {roomCode: string}) => {
+      socketInstance.on(EVENTS.GAME_CREATED, (data: { roomCode: string }) => {
         setRoomCode(data.roomCode);
         setIsLoading(false);
       });
-      
+
       // Handle player joined event
-      socketInstance.on(EVENTS.PLAYER_JOINED, (data: {player: {id: string, name: string, avatar: string}}) => {
+      socketInstance.on(EVENTS.PLAYER_JOINED, (data: { player: { id: string, name: string, avatar: string } }) => {
         setPlayers(prevPlayers => [...prevPlayers, data.player]);
       });
-      
+
       // Handle player left event
-      socketInstance.on(EVENTS.PLAYER_LEFT, (data: {playerId: string}) => {
+      socketInstance.on(EVENTS.PLAYER_LEFT, (data: { playerId: string }) => {
         setPlayers(prevPlayers => prevPlayers.filter(player => player.id !== data.playerId));
       });
-      
+
       // Handle errors
-      socketInstance.on(EVENTS.ERROR, (data: {message: string}) => {
+      socketInstance.on(EVENTS.ERROR, (data: { message: string }) => {
         setError(data.message);
       });
-      
+
       // Cleanup on unmount
       return () => {
+        console.log('---------disconnecting socket at lobby');
         socketInstance.disconnect();
       };
     }
-    
+
     init();
   }, [router, quizId]);
-  
+
   const handleStartGame = () => {
     if (!socket || !roomCode) return;
-    
+
     socket.emit(EVENTS.START_GAME, { gameCode: roomCode });
-    
+
     // Navigate to the game host view
     router.push(`/host/game?code=${roomCode}`);
   };
-  
+
   const copyRoomCode = () => {
     navigator.clipboard.writeText(roomCode);
-    alert('Room code copied to clipboard!');
+    // alert('Room code copied to clipboard!');
   };
-  
+
   if (isLoading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-indigo-500 to-purple-700 p-4">
@@ -101,14 +102,14 @@ export default function Lobby() {
       </main>
     );
   }
-  
+
   if (error) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-indigo-500 to-purple-700 p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-xl overflow-hidden p-6 text-center">
           <h1 className="text-2xl font-bold mb-4">Error</h1>
           <p className="text-red-500 mb-6">{error}</p>
-          <Link 
+          <Link
             href="/host"
             className="px-4 py-2 bg-indigo-600 text-white rounded-md"
           >
@@ -118,7 +119,7 @@ export default function Lobby() {
       </main>
     );
   }
-  
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-indigo-500 to-purple-700 p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl overflow-hidden">
@@ -126,14 +127,14 @@ export default function Lobby() {
           <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">
             Game Lobby
           </h1>
-          
+
           <div className="bg-indigo-50 p-4 rounded-lg mb-6 text-center">
             <p className="text-sm text-indigo-800 mb-2">Share this code with players:</p>
             <div className="flex items-center justify-center">
               <div className="text-3xl font-bold tracking-wider bg-white py-2 px-6 rounded-lg border-2 border-indigo-200">
                 {roomCode}
               </div>
-              <button 
+              <button
                 onClick={copyRoomCode}
                 className="ml-2 p-2 text-indigo-600 hover:bg-indigo-100 rounded"
                 title="Copy room code"
@@ -147,12 +148,12 @@ export default function Lobby() {
               Players can join at {window.location.origin}
             </p>
           </div>
-          
+
           <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-3">Players ({players.length})</h2>
+            <h2 className="text-lg font-semibold mb-3">Players ({players.length} + Host)</h2>
             {players.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">Waiting for players to join...</p>
+                <p className="text-gray-500">Waiting for players to join or start playing alone...</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -165,17 +166,16 @@ export default function Lobby() {
               </div>
             )}
           </div>
-          
+
           <div className="space-y-4">
             <button
               onClick={handleStartGame}
-              disabled={players.length === 0}
-              className="w-full bg-indigo-600 text-white py-3 rounded-md font-medium hover:bg-indigo-700 transition-colors disabled:bg-indigo-400"
+              className="w-full bg-indigo-600 text-white py-3 rounded-md font-medium hover:bg-indigo-700 transition-colors"
             >
               Start Game
             </button>
-            
-            <Link 
+
+            <Link
               href="/host"
               className="block w-full bg-white text-indigo-600 border border-indigo-600 py-3 rounded-md text-center font-medium hover:bg-indigo-50 transition-colors"
             >

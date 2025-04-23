@@ -14,6 +14,9 @@ export const EVENTS = {
   GAME_CREATED: 'game_created',
   PLAYER_JOINED: 'player_joined',
   PLAYER_LEFT: 'player_left',
+  HOST_LEFT: 'host_left', 
+  HOST_DISCONNECTED: 'host_disconnected',
+  HOST_RECONNECTED: 'host_reconnected',
   GAME_STARTED: 'game_started',
   GAME_ENDED: 'game_ended',
   
@@ -23,10 +26,12 @@ export const EVENTS = {
   REVEAL_ANSWER: 'reveal_answer',
   QUESTION_TIMER_END: 'question_timer_end',
   SHOW_LEADERBOARD: 'show_leaderboard',
+  TIMER_UPDATE: 'timer_update',
   
   // Game State Updates
   GAME_STATE_UPDATED: 'game_state_updated',
   PLAYER_ANSWERED: 'player_answered',
+  ALL_PLAYERS_ANSWERED: 'all_players_answered',
   ANSWER_REVEALED: 'answer_revealed',
   LEADERBOARD_UPDATED: 'leaderboard_updated',
   
@@ -48,7 +53,6 @@ export const QUIZ_TYPES = {
   MULTIPLE_CHOICE: 'multiple_choice',
   TRUE_FALSE: 'true_false',
   FLASHCARDS: 'flashcards',
-  TIMED: 'timed',
   FILL_IN_BLANK: 'fill_in_blank'
 };
 

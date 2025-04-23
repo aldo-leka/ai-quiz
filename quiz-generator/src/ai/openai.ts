@@ -10,19 +10,20 @@ const openai = new OpenAI({
 export async function generateQuizWithOpenAI(
   theme: string,
   type: QuizType,
-  questionCount: number
+  questionCount: number,
+  timeLimit?: number
 ): Promise<Quiz> {
   // Get the appropriate prompt based on quiz type
-  const prompt = getQuizPrompt(type, theme, questionCount);
+  const prompt = getQuizPrompt(type, theme, questionCount, timeLimit);
   
   try {
     // Call OpenAI API to generate quiz
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: 'You are an expert quiz creator who creates educational and engaging quizzes.',
+          content: 'You are an expert quiz creator who creates educational and engaging quizzes. Always respond with valid JSON.',
         },
         {
           role: 'user',
@@ -31,7 +32,6 @@ export async function generateQuizWithOpenAI(
       ],
       temperature: 0.7,
       max_tokens: 2000,
-      response_format: { type: 'json_object' },
     });
     
     // Parse the response
@@ -53,6 +53,7 @@ export async function generateQuizWithOpenAI(
       createdById: '',  // This will be filled in by the server
       createdAt: new Date().toISOString(),
       imageUrl: undefined, // This will be generated separately if needed
+      timeLimit: timeLimit, // Include the time limit if specified
     };
     
     return quiz;
@@ -74,7 +75,6 @@ function transformQuestion(question: any, quizType: QuizType): QuizQuestion {
     type: mapQuizTypeToQuestionType(quizType),
     correctAnswer: question.correctAnswer || question.answer,
     explanation: question.explanation,
-    timeLimit: question.timeLimit,
     image_url: question.imageUrl,
   };
   
@@ -96,8 +96,6 @@ function mapQuizTypeToQuestionType(quizType: QuizType): 'multiple_choice' | 'tru
       return 'short_answer';
     case 'fill_in_blank':
       return 'fill_in_blank';
-    case 'timed':
-      return 'multiple_choice';
     default:
       return 'multiple_choice';
   }
