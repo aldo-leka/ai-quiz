@@ -331,7 +331,7 @@ export default function GamePage() {
           )}
           
           <button
-            onClick={handleSubmitAnswer}
+            onClick={() => handleSubmitAnswer(false)}
             disabled={!playerAnswer && currentQuestion.type !== 'flashcard'}
             className="w-full py-3 bg-indigo-600 text-white rounded-md font-medium disabled:bg-indigo-300 transition-colors"
           >
