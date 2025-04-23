@@ -8,7 +8,7 @@
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
     "typecheck": "tsc --noEmit",
-    "create-env": "node -e \"require('fs').writeFileSync('.env', ['PORT', 'CORS_ORIGIN', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'RESEND_API_KEY'].map(key => `${key}=${process.env[key] || ''}`).join('\\n'))\"",
+    "create-env": "node scripts/create-env.js",
     "build-with-deps": "cd ../shared && npm i && npm run build && cd ../quiz-generator && npm i && npm run build && cd ../server && npm i && npm link ../shared && npm link ../quiz-generator && npm run create-env && npm run build"
   },
   "dependencies": {
