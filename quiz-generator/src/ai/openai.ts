@@ -19,7 +19,7 @@ export async function generateQuizWithOpenAI(
   try {
     // Call OpenAI API to generate quiz
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'o4-mini-2025-04-16',
       messages: [
         {
           role: 'system',
@@ -29,16 +29,22 @@ export async function generateQuizWithOpenAI(
           role: 'user',
           content: prompt,
         },
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
+      ]
     });
     
     // Parse the response
-    const responseContent = response.choices[0].message.content;
+    let responseContent = response.choices[0].message.content;
     if (!responseContent) {
       throw new Error('No content in response');
     }
+    
+    // Clean the response content of any markdown code blocks that might be present
+    responseContent = responseContent.replace(/```json\n?/, '').replace(/```\n?$/, '');
+    
+    // Trim any whitespace
+    responseContent = responseContent.trim();
+    
+    console.log("Parsing JSON response:", responseContent);
     
     const quizData = JSON.parse(responseContent);
     

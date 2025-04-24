@@ -30,7 +30,7 @@ export async function generateThemes(
     
     // Call OpenAI API to generate themes
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'o4-mini-2025-04-16',
       messages: [
         {
           role: 'system',
@@ -57,10 +57,10 @@ Include exactly ${count} themes in your response. Make sure your JSON is valid w
           role: 'user',
           content: prompt + " ONLY return a JSON object with the 'themes' array - no other text before or after.",
         },
-      ],
-      temperature: 0.7, // Lowered temperature for more consistent outputs
-      max_tokens: 2000, // Increased max tokens to ensure complete response
+      ]
     });
+
+    console.log('response', response);
     
     // Parse the response
     const responseContent = response.choices[0].message.content;

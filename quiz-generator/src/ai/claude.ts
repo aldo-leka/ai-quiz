@@ -19,7 +19,7 @@ export async function generateQuizWithClaude(
   try {
     // Call Claude API to generate quiz (using new messages API format)
     const response = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 4000,
       temperature: 0.7,
       system: "You are an expert quiz creator who creates educational and engaging quizzes. Always respond with valid JSON.",
