@@ -32,15 +32,9 @@ export default function GamePage() {
     socketInstance.on(EVENTS.CONNECT, () => {
       console.log('Connected to game server');
       
-      // Check if this is a reconnection
-      const isReconnect = searchParams.get('reconnect') === 'true';
+      // Simply check that we have the player information
       const playerName = searchParams.get('name') || '';
       const playerAvatar = searchParams.get('avatar') || '';
-      
-      if (isReconnect) {
-        console.log(`DEBUG: Reconnecting to game ${gameCode} as player ${playerName}`);
-        handlePlayerReconnection(socketInstance, gameCode, playerName, playerAvatar);
-      }
     });
     
     // Handle socket reconnection events
@@ -51,9 +45,17 @@ export default function GamePage() {
       const playerName = searchParams.get('name') || '';
       const playerAvatar = searchParams.get('avatar') || '';
       
-      if (playerName) {
-        handlePlayerReconnection(socketInstance, gameCode, playerName, playerAvatar);
-      }
+      // Handle visibility change (browser tab hidden/visible)
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible' && socketInstance) {
+          console.log('Tab became visible, checking connection');
+          if (!socketInstance.connected) {
+            socketInstance.connect();
+          }
+        }
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
     });
     
     socketInstance.on(EVENTS.GAME_STATE_UPDATED, async (data: GameSession) => {

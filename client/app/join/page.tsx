@@ -41,28 +41,15 @@ export default function JoinGame() {
           setStatus('connected');
           console.log(`DEBUG: Player socket connected with ID ${socketInstance.id}`);
           
-          // Check if game is already in progress (if coming from a refresh)
-          if (searchParams.get('reconnect') === 'true') {
-            console.log(`DEBUG: Attempting to reconnect to game ${gameCode} as ${playerName}`);
-            
-            // Use our special reconnect handler
-            socketInstance.emit('reconnect_player', {
-              gameCode,
-              playerName,
-              playerAvatar,
-              userId
-            });
-          } else {
-            console.log(`DEBUG: Joining new game ${gameCode} as ${playerName}`);
-            
-            // Join the game as a new player
-            socketInstance.emit(EVENTS.JOIN_GAME, {
-              gameCode,
-              playerName,
-              playerAvatar,
-              userId
-            });
-          }
+          console.log(`DEBUG: Joining game ${gameCode} as ${playerName}`);
+          
+          // Always join as a new player
+          socketInstance.emit(EVENTS.JOIN_GAME, {
+            gameCode,
+            playerName,
+            playerAvatar,
+            userId
+          });
         });
         
         // Set up the rest of the event listeners
@@ -81,8 +68,8 @@ export default function JoinGame() {
       });
       
       socketInstance.on(EVENTS.GAME_STARTED, () => {
-        console.log(`DEBUG: Game started, navigating to game page with reconnect=true flag`);
-        router.push(`/game?code=${gameCode}&name=${encodeURIComponent(playerName)}&avatar=${encodeURIComponent(playerAvatar)}&reconnect=true`);
+        console.log(`DEBUG: Game started, navigating to game page`);
+        router.push(`/game?code=${gameCode}&name=${encodeURIComponent(playerName)}&avatar=${encodeURIComponent(playerAvatar)}`);
       });
       
       socketInstance.on(EVENTS.ERROR, (data) => {

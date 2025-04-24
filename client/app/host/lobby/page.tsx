@@ -31,14 +31,20 @@ export default function Lobby() {
 
       setUser(userData);
 
-      // Connect to Socket.io server
-      const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+      // Connect to Socket.io server with reconnection options
+      const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', {
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 20000
+      });
+      
       setSocket(socketInstance);
 
       // Setup event listeners
       socketInstance.on(EVENTS.CONNECT, () => {
         console.log('Connected to game server');
 
+        // Create a new game
         socketInstance.emit(EVENTS.CREATE_GAME, {
           hostName: userData.name,
           hostAvatar: userData.avatar_url || '👨‍💻',
@@ -68,9 +74,23 @@ export default function Lobby() {
         setError(data.message);
       });
 
+      // Handle visibility change (browser tab hidden/visible)
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible' && socketInstance) {
+          console.log('Tab became visible, checking connection');
+          if (!socketInstance.connected) {
+            console.log('Socket disconnected, reconnecting...');
+            socketInstance.connect();
+          }
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
       // Cleanup on unmount
       return () => {
         console.log('---------disconnecting socket at lobby');
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
         socketInstance.disconnect();
       };
     }
