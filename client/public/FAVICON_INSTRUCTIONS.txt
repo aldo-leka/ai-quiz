@@ -1,0 +1,13 @@
+FAVICON INSTRUCTIONS
+====================
+
+Files needed:
+- favicon.ico (multi-size icon file)
+- favicon.png (at least 32x32 pixels)
+- apple-touch-icon.png (180x180 pixels)
+
+Location: /Users/aldo/Source/ai-quiz/client/public/
+
+These files should match your QuizPlus.io branding with the indigo-to-purple gradient.
+
+To ensure proper favicon display across devices, consider adding these files to the public folder.

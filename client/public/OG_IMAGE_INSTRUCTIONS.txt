@@ -1,0 +1,17 @@
+OG IMAGE INSTRUCTIONS
+====================
+
+File: og-image.png
+Location: /Users/aldo/Source/ai-quiz/client/public/og-image.png
+Dimensions: 1200 x 630 pixels
+
+This file should be your Open Graph image for social media sharing. The metadata has been configured to use this image.
+
+Design Recommendations:
+- Include the QuizPlus.io logo with the gradient styling
+- Use a clean, appealing background
+- Add a tagline like "AI-powered quiz games"
+- Keep text minimal and readable
+- Make sure the image looks good when scaled down
+
+Place your designed image in this location and it will be used for social media sharing cards when your site is linked.

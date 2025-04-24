@@ -11,7 +11,8 @@ const envVars = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'NEXT_PUBLIC_API_URL',
-  'NEXT_PUBLIC_STRIPE_PUBLIC_KEY'
+  'NEXT_PUBLIC_STRIPE_PUBLIC_KEY',
+  'NEXT_PUBLIC_APP_URL'
 ];
 
 // Create the .env content by reading from process.env

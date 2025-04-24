@@ -53,7 +53,7 @@ export function Header() {
   return (
     <header className="bg-white shadow-sm py-4">
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold text-indigo-600">AI Quiz Game</Link>
+        <Link href="/" className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text hover:from-indigo-500 hover:to-purple-500 transition-all">QuizPlus.io</Link>
         
         <nav className="hidden md:block">
           <ul className="flex space-x-6">
