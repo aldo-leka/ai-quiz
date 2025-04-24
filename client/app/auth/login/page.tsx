@@ -39,20 +39,6 @@ export default function Login() {
     }
   };
   
-  const handleDemoLogin = async () => {
-    setEmail('demo@example.com');
-    setPassword('password123');
-    
-    // In a real app, you would use actual demo credentials
-    setLoading(true);
-    
-    // Simulate login delay
-    setTimeout(() => {
-      setLoading(false);
-      router.push('/host');
-    }, 1000);
-  };
-  
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-indigo-500 to-purple-700 p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl overflow-hidden">
@@ -107,16 +93,8 @@ export default function Login() {
             </div>
           </form>
           
-          <div className="mt-4">
-            <button
-              onClick={handleDemoLogin}
-              className="w-full bg-gray-100 text-gray-800 border border-gray-300 py-3 rounded-md font-medium hover:bg-gray-200 transition-colors"
-            >
-              Try Demo
-            </button>
-          </div>
           
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-800">
