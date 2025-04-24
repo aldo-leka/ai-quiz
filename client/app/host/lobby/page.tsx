@@ -7,11 +7,11 @@ import { io, Socket } from 'socket.io-client';
 import { User, EVENTS } from 'shared';
 import { getCurrentUser } from '@/lib/supabase/auth';
 
-// Helper to generate a random 6-character code (similar to server-side)
+// Helper to generate a random 4-character code (similar to server-side)
 function generateLocalRoomCode() {
   const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoiding characters that look similar
   let result = '';
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 4; i++) {
     result += charset.charAt(Math.floor(Math.random() * charset.length));
   }
   return result;
