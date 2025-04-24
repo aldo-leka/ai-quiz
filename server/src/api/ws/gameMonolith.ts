@@ -1393,8 +1393,10 @@ export function setupSocketHandlers(socketIo: SocketIOServer) {
         // Join room
         socket.join(gameCode);
         
-        // Send game state
+        // Send game state immediately - critical for reconnection
         socket.emit(EVENTS.GAME_STATE_UPDATED, gameSession);
+        
+        console.log(`Player ${playerName} successfully reconnected to game ${gameCode}`);
         
         // Notify other players
         io.to(gameCode).emit(EVENTS.GAME_STATE_UPDATED, gameSession);

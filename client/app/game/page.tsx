@@ -17,9 +17,11 @@ export default function GamePage() {
   const [timer, setTimer] = useState<number>(0);
   
   const gameCode = searchParams.get('code') || '';
+  const playerName = searchParams.get('name') || '';
+  const playerAvatar = searchParams.get('avatar') || '';
   
   useEffect(() => {
-    if (!gameCode) {
+    if (!gameCode || !playerName || !playerAvatar) {
       router.push('/');
       return;
     }
@@ -32,9 +34,20 @@ export default function GamePage() {
     socketInstance.on(EVENTS.CONNECT, () => {
       console.log('Connected to game server');
       
-      // Simply check that we have the player information
+      // Get player info from search params
       const playerName = searchParams.get('name') || '';
       const playerAvatar = searchParams.get('avatar') || '';
+      
+      if (playerName && playerAvatar) {
+        console.log(`Player connected - sending reconnect_player event for ${playerName} to room ${gameCode}`);
+        
+        // Always try to reconnect the player when we establish a connection
+        socketInstance.emit('reconnect_player', {
+          gameCode,
+          playerName,
+          playerAvatar
+        });
+      }
     });
     
     // Handle socket reconnection events
@@ -45,18 +58,42 @@ export default function GamePage() {
       const playerName = searchParams.get('name') || '';
       const playerAvatar = searchParams.get('avatar') || '';
       
-      // Handle visibility change (browser tab hidden/visible)
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible' && socketInstance) {
-          console.log('Tab became visible, checking connection');
-          if (!socketInstance.connected) {
-            socketInstance.connect();
-          }
-        }
-      };
-      
-      document.addEventListener('visibilitychange', handleVisibilityChange);
+      if (playerName && playerAvatar) {
+        console.log(`Player reconnected - sending reconnect_player event for ${playerName}`);
+        socketInstance.emit('reconnect_player', {
+          gameCode,
+          playerName,
+          playerAvatar
+        });
+      }
     });
+    
+    // Handle visibility change (browser tab hidden/visible)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && socketInstance) {
+        console.log('Tab became visible, checking connection');
+        if (!socketInstance.connected) {
+          socketInstance.connect();
+          
+          // After reconnecting, try to rejoin the game
+          setTimeout(() => {
+            const playerName = searchParams.get('name') || '';
+            const playerAvatar = searchParams.get('avatar') || '';
+            
+            if (playerName && playerAvatar) {
+              console.log(`Visibility changed - reconnecting player ${playerName}`);
+              socketInstance.emit('reconnect_player', {
+                gameCode,
+                playerName,
+                playerAvatar
+              });
+            }
+          }, 500);
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     socketInstance.on(EVENTS.GAME_STATE_UPDATED, async (data: GameSession) => {
       console.log("Game state updated:", data.status, data);
@@ -179,9 +216,10 @@ export default function GamePage() {
     
     // Cleanup on unmount
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       socketInstance.disconnect();
     };
-  }, [gameCode, router]);
+  }, [gameCode, playerName, playerAvatar, router]);
   
   // Effect to handle timer reaching zero
   useEffect(() => {
