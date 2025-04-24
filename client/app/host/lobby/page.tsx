@@ -21,6 +21,12 @@ export default function Lobby() {
 
   // Load user and setup game on component mount
   useEffect(() => {
+    // On initial render, remove any saved code from a previous session
+    // This simplifies the workflow and prevents reconnection issues
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('hostRoomCode');
+    }
+    
     async function init() {
       // Check authentication
       const userData = await getCurrentUser();
@@ -31,11 +37,14 @@ export default function Lobby() {
 
       setUser(userData);
 
-      // Connect to Socket.io server with reconnection options
+      // Connect to Socket.io server with improved options for mobile
       const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', {
-        reconnectionAttempts: 5,
+        reconnectionAttempts: 10,
         reconnectionDelay: 1000,
-        timeout: 20000
+        timeout: 60000,
+        autoConnect: true,
+        forceNew: false,
+        transports: ['websocket', 'polling'] // Try WebSocket first, fallback to polling
       });
       
       setSocket(socketInstance);
@@ -44,17 +53,18 @@ export default function Lobby() {
       socketInstance.on(EVENTS.CONNECT, () => {
         console.log('Connected to game server');
 
-        // Create a new game
+        // Always create a new game in the lobby
         socketInstance.emit(EVENTS.CREATE_GAME, {
           hostName: userData.name,
           hostAvatar: userData.avatar_url || '👨‍💻',
-          hostUserId: userData.id, // Send the user's ID for persistence
+          hostUserId: userData.id,
           quizId: quizId || undefined
         });
       });
 
       // Handle game created event
       socketInstance.on(EVENTS.GAME_CREATED, (data: { roomCode: string }) => {
+        // Save to state only - avoid using sessionStorage to prevent reconnection issues
         setRoomCode(data.roomCode);
         setIsLoading(false);
       });
@@ -74,12 +84,16 @@ export default function Lobby() {
         setError(data.message);
       });
 
-      // Handle visibility change (browser tab hidden/visible)
+      // Critical for mobile - handle page visibility changes
       const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible' && socketInstance) {
+        if (document.visibilityState === 'visible') {
           console.log('Tab became visible, checking connection');
+          
           if (!socketInstance.connected) {
             console.log('Socket disconnected, reconnecting...');
+            
+            // Simply reconnect the socket - when connected, the code will flow
+            // through the normal CONNECT event which creates a new game
             socketInstance.connect();
           }
         }
