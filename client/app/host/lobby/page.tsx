@@ -1,11 +1,21 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { User, EVENTS } from 'shared';
 import { getCurrentUser } from '@/lib/supabase/auth';
+
+// Helper to generate a random 6-character code (similar to server-side)
+function generateLocalRoomCode() {
+  const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoiding characters that look similar
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return result;
+}
 
 export default function Lobby() {
   const searchParams = useSearchParams();
@@ -16,97 +26,146 @@ export default function Lobby() {
   const [players, setPlayers] = useState<{ id: string, name: string, avatar: string }[]>([]);
   const [roomCode, setRoomCode] = useState<string>('');
   const [error, setError] = useState<string>('');
-
+  const [gameCreated, setGameCreated] = useState(false);
+  const gameCodeRef = useRef<string>('');
+  
   const quizId = searchParams.get('quizId');
+
+  // Initialize room code if not already set
+  useEffect(() => {
+    // On first render, generate a room code that will persist even during app switching
+    if (!gameCodeRef.current) {
+      gameCodeRef.current = generateLocalRoomCode();
+    }
+  }, []);
 
   // Load user and setup game on component mount
   useEffect(() => {
-    // On initial render, remove any saved code from a previous session
-    // This simplifies the workflow and prevents reconnection issues
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('hostRoomCode');
-    }
-    
     async function init() {
-      // Check authentication
-      const userData = await getCurrentUser();
-      if (!userData) {
-        router.push('/auth/login');
-        return;
-      }
+      try {
+        // Check authentication
+        const userData = await getCurrentUser();
+        if (!userData) {
+          router.push('/auth/login');
+          return;
+        }
 
-      setUser(userData);
+        setUser(userData);
 
-      // Connect to Socket.io server with improved options for mobile
-      const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', {
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000,
-        timeout: 60000,
-        autoConnect: true,
-        forceNew: false,
-        transports: ['websocket', 'polling'] // Try WebSocket first, fallback to polling
-      });
-      
-      setSocket(socketInstance);
-
-      // Setup event listeners
-      socketInstance.on(EVENTS.CONNECT, () => {
-        console.log('Connected to game server');
-
-        // Always create a new game in the lobby
-        socketInstance.emit(EVENTS.CREATE_GAME, {
-          hostName: userData.name,
-          hostAvatar: userData.avatar_url || '👨‍💻',
-          hostUserId: userData.id,
-          quizId: quizId || undefined
+        // Connect to Socket.io server with options that work well on mobile
+        const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', {
+          reconnectionAttempts: 10,
+          reconnectionDelay: 1000,
+          timeout: 60000,
+          autoConnect: true,
+          forceNew: false,
+          transports: ['websocket', 'polling']
         });
-      });
+        
+        setSocket(socketInstance);
 
-      // Handle game created event
-      socketInstance.on(EVENTS.GAME_CREATED, (data: { roomCode: string }) => {
-        // Save to state only - avoid using sessionStorage to prevent reconnection issues
-        setRoomCode(data.roomCode);
-        setIsLoading(false);
-      });
-
-      // Handle player joined event
-      socketInstance.on(EVENTS.PLAYER_JOINED, (data: { player: { id: string, name: string, avatar: string } }) => {
-        setPlayers(prevPlayers => [...prevPlayers, data.player]);
-      });
-
-      // Handle player left event
-      socketInstance.on(EVENTS.PLAYER_LEFT, (data: { playerId: string }) => {
-        setPlayers(prevPlayers => prevPlayers.filter(player => player.id !== data.playerId));
-      });
-
-      // Handle errors
-      socketInstance.on(EVENTS.ERROR, (data: { message: string }) => {
-        setError(data.message);
-      });
-
-      // Critical for mobile - handle page visibility changes
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible') {
-          console.log('Tab became visible, checking connection');
+        // Setup event listeners
+        socketInstance.on(EVENTS.CONNECT, () => {
+          console.log('Connected to game server');
           
-          if (!socketInstance.connected) {
-            console.log('Socket disconnected, reconnecting...');
+          // Only create a game if we haven't already done so
+          if (!gameCreated) {
+            // Use the persistent room code
+            const codeToUse = gameCodeRef.current;
+            console.log(`Creating game with host-generated code: ${codeToUse}`);
             
-            // Simply reconnect the socket - when connected, the code will flow
-            // through the normal CONNECT event which creates a new game
+            // Pass the predefined game code to the server
+            socketInstance.emit('create_game_with_code', {
+              gameCode: codeToUse,
+              hostName: userData.name,
+              hostAvatar: userData.avatar_url || '👨‍💻',
+              hostUserId: userData.id,
+              quizId: quizId || undefined
+            });
+          }
+        });
+
+        // Handle game created event
+        socketInstance.on(EVENTS.GAME_CREATED, (data: { roomCode: string }) => {
+          console.log(`Game created with code: ${data.roomCode}`);
+          setRoomCode(data.roomCode);
+          setGameCreated(true);
+          setIsLoading(false);
+        });
+
+        // Handle player joined event
+        socketInstance.on(EVENTS.PLAYER_JOINED, (data: { player: { id: string, name: string, avatar: string } }) => {
+          console.log(`Player joined: ${data.player.name}`);
+          setPlayers(prevPlayers => {
+            // Avoid duplicate players
+            if (prevPlayers.some(p => p.id === data.player.id)) {
+              return prevPlayers;
+            }
+            return [...prevPlayers, data.player];
+          });
+        });
+
+        // Handle player left event
+        socketInstance.on(EVENTS.PLAYER_LEFT, (data: { playerId: string }) => {
+          setPlayers(prevPlayers => prevPlayers.filter(player => player.id !== data.playerId));
+        });
+
+        // Handle errors
+        socketInstance.on(EVENTS.ERROR, (data: { message: string }) => {
+          console.error(`Socket error: ${data.message}`);
+          setError(data.message);
+          
+          // If error indicates someone else is using this code, generate a new one
+          if (data.message.includes('already exists')) {
+            gameCodeRef.current = generateLocalRoomCode();
+            setGameCreated(false);
+          }
+        });
+
+        // Critical for mobile - handle page visibility changes
+        const handleVisibilityChange = () => {
+          if (document.visibilityState === 'visible') {
+            console.log('Tab became visible, checking connection');
+            
+            if (!socketInstance.connected) {
+              console.log('Socket disconnected, reconnecting with existing game code');
+              socketInstance.connect();
+              
+              // Wait for connection, then attempt to rejoin
+              setTimeout(() => {
+                if (gameCreated && roomCode) {
+                  socketInstance.emit('join_host_room', {
+                    gameCode: roomCode,
+                    hostUserId: userData.id
+                  });
+                }
+              }, 500);
+            }
+          }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Mobile-specific: Handle focus events
+        window.addEventListener('focus', () => {
+          console.log('Window focused');
+          if (socketInstance && !socketInstance.connected && gameCreated) {
             socketInstance.connect();
           }
-        }
-      };
+        });
 
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
-      // Cleanup on unmount
-      return () => {
-        console.log('---------disconnecting socket at lobby');
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        socketInstance.disconnect();
-      };
+        // Cleanup on unmount
+        return () => {
+          console.log('Cleaning up lobby component');
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          window.removeEventListener('focus', () => {});
+          socketInstance.disconnect();
+        };
+      } catch (error) {
+        console.error('Error in lobby initialization:', error);
+        setError('Failed to initialize game lobby');
+        setIsLoading(false);
+      }
     }
 
     init();

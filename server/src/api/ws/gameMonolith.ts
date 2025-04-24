@@ -1007,6 +1007,79 @@ export function setupSocketHandlers(socketIo: SocketIOServer) {
       });
     });
     
+    // Create game with client-provided code (for mobile app switching)
+    socket.on('create_game_with_code', (data: CreateGameRequest & { gameCode: string }) => {
+      const { hostName, hostAvatar, hostUserId, quizId, gameCode } = data;
+      
+      try {
+        // Check if game with this code already exists
+        if (sessions.has(gameCode)) {
+          // Attempt to reconnect host instead
+          handleHostReconnection(socket.id, gameCode, hostUserId)
+            .then(session => {
+              if (session) {
+                // Success - join the room and notify client
+                socket.join(gameCode);
+                socket.emit(EVENTS.GAME_CREATED, { 
+                  roomCode: gameCode,
+                  gameSession: session
+                });
+                console.log(`Host reconnected to existing game with code: ${gameCode}`);
+              } else {
+                // Failed - notify client to try a different code
+                socket.emit(EVENTS.ERROR, { 
+                  message: 'Game with this code already exists but you cannot join as host' 
+                });
+              }
+            });
+          return;
+        }
+        
+        // Create a new game with the specified code
+        console.log(`Creating game with custom code: ${gameCode}`);
+        
+        // Create new game session with the custom code
+        const gameSession: GameSession = {
+          id: uuidv4(),
+          code: gameCode,
+          hostId: socket.id,
+          hostUserId: hostUserId,
+          status: 'lobby',
+          players: [{
+            id: socket.id,
+            name: hostName,
+            avatar: hostAvatar,
+            score: 0,
+            isConnected: true,
+            isHost: true,
+            userId: hostUserId
+          }],
+          currentQuizId: quizId,
+          currentQuestionIndex: 0,
+          createdAt: new Date().toISOString(),
+          lastActivityAt: new Date().toISOString()
+        };
+        
+        // Store the session
+        sessions.set(gameCode, gameSession);
+        socketToPlayer.set(socket.id, { gameCode, playerId: socket.id });
+        
+        // Join the socket to the room
+        socket.join(gameCode);
+        
+        // Emit game created event
+        socket.emit(EVENTS.GAME_CREATED, { 
+          roomCode: gameCode,
+          gameSession
+        });
+        
+        console.log(`Game created with client-provided code: ${gameCode} by ${hostName}`);
+      } catch (error) {
+        console.error('Error creating game with custom code:', error);
+        socket.emit(EVENTS.ERROR, { message: 'Failed to create game with provided code' });
+      }
+    });
+    
     // Join a game
     socket.on(EVENTS.JOIN_GAME, async (data: JoinGameRequest) => {
       const { gameCode, playerName, playerAvatar, userId } = data;
