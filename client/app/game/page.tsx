@@ -535,7 +535,6 @@ export default function GamePage() {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-4">Leaderboard</h2>
           <div className="space-y-2">
-            {console.log("Rendering leaderboard with players:", players)}
             {players.length > 0 ? (
               players
                 .sort((a, b) => b.score - a.score)
