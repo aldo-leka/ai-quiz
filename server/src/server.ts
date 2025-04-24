@@ -21,6 +21,11 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
+
+// Special handling for Stripe webhook endpoint - must come BEFORE express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
+// Regular JSON parsing for all other routes
 app.use(express.json());
 
 // Create HTTP server

@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import { Express, Request, Response } from 'express';
 import Stripe from 'stripe';
 import { addCreditsToUser } from '../../db/users';
 import { authenticate } from './auth';
@@ -83,10 +83,13 @@ export function setupPaymentRoutes(app: Express) {
     }
   });
   
-  app.post('/api/payments/webhook', async (req, res) => {
+  // Webhook handler - raw body parsing is set up in server.ts
+  app.post('/api/payments/webhook', async (req: Request, res: Response) => {
     const signature = req.headers['stripe-signature'] as string;
     
     try {
+      // req.body is already the raw buffer because of the express.raw middleware
+      
       // Verify the webhook signature
       const event = stripe.webhooks.constructEvent(
         req.body,
