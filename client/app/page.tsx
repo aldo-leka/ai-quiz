@@ -7,7 +7,7 @@ export default function Home() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl overflow-hidden">
         <div className="p-6 sm:p-8">
           <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
-            AI Quiz Game
+            QuizPlus.io
           </h1>
           <p className="text-center text-gray-600 mb-8">
             Join a multiplayer quiz or create your own AI-generated game!
