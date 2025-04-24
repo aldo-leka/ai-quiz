@@ -498,11 +498,11 @@ export default function GamePage() {
                         console.log(`- Array comparison (single answer): ${isCorrect}`);
                       } else if (Array.isArray(playerAnswer)) {
                         // Check if arrays match (ignoring order)
-                        const normalizedPlayerAnswers = playerAnswer.map(a => a.toLowerCase().trim()).sort();
-                        const normalizedCorrectAnswers = currentQuestion.correctAnswer.map(a => a.toLowerCase().trim()).sort();
-                        isCorrect = normalizedPlayerAnswers.length === normalizedCorrectAnswers.length &&
-                          normalizedPlayerAnswers.every((a, i) => a === normalizedCorrectAnswers[i]);
-                        console.log(`- Array comparison (multiple answers): ${isCorrect}`);
+                        // const normalizedPlayerAnswers = playerAnswer.map(a => a.toLowerCase().trim()).sort();
+                        // const normalizedCorrectAnswers = currentQuestion.correctAnswer.map(a => a.toLowerCase().trim()).sort();
+                        // isCorrect = normalizedPlayerAnswers.length === normalizedCorrectAnswers.length &&
+                        //   normalizedPlayerAnswers.every((a, i) => a === normalizedCorrectAnswers[i]);
+                        // console.log(`- Array comparison (multiple answers): ${isCorrect}`);
                       }
                     }
                     
