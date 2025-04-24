@@ -93,20 +93,22 @@ export default function ActiveGames() {
             key={game.id}
             className="p-4 border border-indigo-100 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0">
               <div>
-                <div className="flex items-center">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-lg">Game Code: {game.code}</span>
                   {game.hostDisconnectedAt && (
-                    <span className="ml-2 px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800">
+                    <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 whitespace-nowrap">
                       Host Disconnected
                     </span>
                   )}
                 </div>
-                <p className="text-gray-600 text-sm mt-1">
-                  Status: <span className="capitalize">{game.status}</span> • 
-                  Question {game.currentQuestionIndex + 1} • 
-                  {game.activePlayerCount} of {game.playerCount} players active
+                <p className="text-gray-600 text-sm mt-1 flex flex-wrap gap-1">
+                  <span>Status: <span className="capitalize">{game.status}</span></span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>Question {game.currentQuestionIndex + 1}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>{game.activePlayerCount} of {game.playerCount} players active</span>
                 </p>
                 <p className="text-gray-500 text-xs mt-1">
                   Last activity: {formatTimeAgo(game.lastActivityAt)}
@@ -115,7 +117,7 @@ export default function ActiveGames() {
               
               <Link
                 href={`/host/game?code=${game.code}&resume=true`}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors text-center md:text-left whitespace-nowrap"
               >
                 Resume Hosting
               </Link>
