@@ -104,6 +104,7 @@ export interface CreateQuizRequest {
   type: QuizType;
   questionCount: number;
   aiService: AiService;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
   documentUrl?: string;
   timeLimit?: number; // Time limit in seconds for each question (default: 30)
 }

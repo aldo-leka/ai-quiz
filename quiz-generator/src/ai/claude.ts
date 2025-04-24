@@ -11,15 +11,16 @@ export async function generateQuizWithClaude(
   theme: string,
   type: QuizType,
   questionCount: number,
+  difficulty?: 'beginner' | 'intermediate' | 'advanced',
   timeLimit?: number
 ): Promise<Quiz> {
-  // Get the appropriate prompt based on quiz type
-  const prompt = getQuizPrompt(type, theme, questionCount, timeLimit);
+  // Get the appropriate prompt based on quiz type and difficulty
+  const prompt = getQuizPrompt(type, theme, questionCount, difficulty, timeLimit);
   
   try {
     // Call Claude API to generate quiz (using new messages API format)
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-latest',
+      model: 'claude-3-5-haiku-latest', // claude-3-5-haiku-20241022
       max_tokens: 4000,
       temperature: 0.7,
       system: "You are an expert quiz creator who creates educational and engaging quizzes. Always respond with valid JSON.",

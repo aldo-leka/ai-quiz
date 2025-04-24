@@ -37,7 +37,7 @@ export function setupQuizRoutes(app: Express) {
   app.post('/api/quiz/generate', authenticate, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const { theme, type, questionCount, aiService, timeLimit } = req.body;
+      const { theme, type, questionCount, aiService, difficulty, timeLimit } = req.body;
       
       // Check if the user has enough credits
       const hasEnoughCredits = await deductCreditsFromUser(userId, 1);
@@ -52,6 +52,7 @@ export function setupQuizRoutes(app: Express) {
         type,
         questionCount: Math.min(questionCount, 15), // Cap at 15 questions
         aiService,
+        difficulty,
         timeLimit
       });
       
@@ -81,7 +82,7 @@ export function setupQuizRoutes(app: Express) {
   app.post('/api/quiz/generate-from-document', authenticate, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const { documentUrl, questionCount, type, timeLimit } = req.body;
+      const { documentUrl, questionCount, type, difficulty, timeLimit } = req.body;
       
       // Check if the user has enough credits
       const hasEnoughCredits = await deductCreditsFromUser(userId, 2); // RAG costs more
@@ -95,6 +96,7 @@ export function setupQuizRoutes(app: Express) {
         documentUrl,
         questionCount: Math.min(questionCount, 15), // Cap at 15 questions
         type,
+        difficulty,
         timeLimit, // Include the timeLimit parameter
         theme: 'Document-based Quiz', // Default theme for document-based quizzes
         aiService: 'openai' // Default to OpenAI for document processing

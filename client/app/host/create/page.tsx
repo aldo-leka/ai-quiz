@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { QuizType, QUIZ_TYPES, AiService, AI_SERVICES, QuizTheme } from 'shared';
+import { Wand2 } from 'lucide-react';
+import { QuizType, QUIZ_TYPES, AiService, AI_SERVICES, QuizTheme, DIFFICULTY_LEVELS } from 'shared';
 
 export default function CreateQuiz() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function CreateQuiz() {
   const [quizType, setQuizType] = useState<QuizType>('multiple_choice');
   const [questionCount, setQuestionCount] = useState(10);
   const [aiService, setAiService] = useState<AiService>('openai');
+  const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner'); // Default: beginner
   const [selectedTheme, setSelectedTheme] = useState<QuizTheme | null>(null);
   const [suggestedThemes, setSuggestedThemes] = useState<QuizTheme[]>([]);
   const [customDocumentUrl, setCustomDocumentUrl] = useState('');
@@ -94,6 +96,7 @@ export default function CreateQuiz() {
           documentUrl: customDocumentUrl,
           questionCount,
           type: quizType,
+          difficulty,
           timeLimit: timedQuiz ? timeLimit : undefined
         });
         
@@ -110,6 +113,7 @@ export default function CreateQuiz() {
           type: quizType,
           questionCount,
           aiService,
+          difficulty,
           timeLimit: timedQuiz ? timeLimit : undefined
         });
         
@@ -216,9 +220,7 @@ export default function CreateQuiz() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
+                <Wand2 className="h-5 w-5" />
               )}
             </button>
           </div>
@@ -342,6 +344,23 @@ export default function CreateQuiz() {
           </div>
           
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Difficulty Level
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {Object.entries(DIFFICULTY_LEVELS).map(([key, value]) => (
+                <button
+                  key={key}
+                  onClick={() => setDifficulty(value as 'beginner' | 'intermediate' | 'advanced')}
+                  className={`p-3 border-2 rounded-lg ${difficulty === value ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200'}`}
+                >
+                  {formatDifficulty(value)}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div>
             <div className="flex items-center justify-between">
               <label className="block text-sm font-medium text-gray-700">
                 Timed Quiz
@@ -394,6 +413,7 @@ export default function CreateQuiz() {
               <li><span className="text-gray-600">Type:</span> {formatQuizType(quizType)}</li>
               <li><span className="text-gray-600">Theme:</span> {selectedTheme?.title || 'Custom Document'}</li>
               <li><span className="text-gray-600">Questions:</span> {questionCount}</li>
+              <li><span className="text-gray-600">Difficulty:</span> {formatDifficulty(difficulty)}</li>
               <li><span className="text-gray-600">Time Limit:</span> {timedQuiz ? `${timeLimit} seconds per question` : 'No time limit'}</li>
               <li><span className="text-gray-600">AI Service:</span> {formatAiService(aiService)}</li>
               <li><span className="text-gray-600">Cost:</span> 1 credit</li>
@@ -486,5 +506,14 @@ function formatAiService(service: string): string {
     case 'openai': return 'OpenAI';
     case 'claude': return 'Claude';
     default: return service;
+  }
+}
+
+function formatDifficulty(difficulty: string): string {
+  switch(difficulty) {
+    case 'beginner': return 'Beginner';
+    case 'intermediate': return 'Intermediate';
+    case 'advanced': return 'Advanced';
+    default: return difficulty;
   }
 }

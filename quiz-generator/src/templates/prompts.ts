@@ -1,14 +1,24 @@
 import { QuizType } from 'shared';
 
 /**
- * Returns the appropriate prompt for generating a quiz based on the type
+ * Returns the appropriate prompt for generating a quiz based on the type and difficulty
  */
-export function getQuizPrompt(type: QuizType, theme: string, questionCount: number, timeLimit?: number): string {
+export function getQuizPrompt(
+  type: QuizType, 
+  theme: string, 
+  questionCount: number, 
+  difficulty?: 'beginner' | 'intermediate' | 'advanced',
+  timeLimit?: number
+): string {
   const timedInstructions = timeLimit 
     ? `This is a timed quiz with ${timeLimit} seconds per question.` 
     : '';
+    
+  const difficultyInstructions = difficulty
+    ? `The difficulty level should be ${difficulty.toUpperCase()}.`
+    : '';
   
-  const basePrompt = `Create a ${type} quiz about ${theme} with ${questionCount} questions. ${timedInstructions}
+  const basePrompt = `Create a ${type} quiz about ${theme} with ${questionCount} questions. ${difficultyInstructions} ${timedInstructions}
   Return the response as a JSON object with the following structure:
   {
     "title": "Quiz title",

@@ -11,10 +11,11 @@ export async function generateQuizWithOpenAI(
   theme: string,
   type: QuizType,
   questionCount: number,
+  difficulty?: 'beginner' | 'intermediate' | 'advanced',
   timeLimit?: number
 ): Promise<Quiz> {
-  // Get the appropriate prompt based on quiz type
-  const prompt = getQuizPrompt(type, theme, questionCount, timeLimit);
+  // Get the appropriate prompt based on quiz type and difficulty
+  const prompt = getQuizPrompt(type, theme, questionCount, difficulty, timeLimit);
   
   try {
     // Call OpenAI API to generate quiz

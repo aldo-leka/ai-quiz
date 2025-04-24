@@ -70,6 +70,13 @@ export const AI_SERVICES = {
   CLAUDE: 'claude'
 };
 
+// Quiz Difficulty Levels
+export const DIFFICULTY_LEVELS = {
+  BEGINNER: 'beginner',
+  INTERMEDIATE: 'intermediate',
+  ADVANCED: 'advanced'
+};
+
 // Error Codes
 export const ERROR_CODES = {
   GAME_NOT_FOUND: 'game_not_found',

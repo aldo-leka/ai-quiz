@@ -8,7 +8,7 @@ import { generateThemes } from './themes/generator';
  * Generates a quiz based on the given request parameters
  */
 export async function generateQuiz(request: CreateQuizRequest): Promise<Quiz> {
-  const { theme, type, questionCount, aiService } = request;
+  const { theme, type, questionCount, aiService, difficulty } = request;
   
   // Validate inputs
   if (!theme || !type || !questionCount) {
@@ -22,9 +22,9 @@ export async function generateQuiz(request: CreateQuizRequest): Promise<Quiz> {
   // Choose AI service based on request
   try {
     if (aiService === 'claude') {
-      return await generateQuizWithClaude(theme, type, questionCount, request.timeLimit);
+      return await generateQuizWithClaude(theme, type, questionCount, difficulty, request.timeLimit);
     } else {
-      return await generateQuizWithOpenAI(theme, type, questionCount, request.timeLimit);
+      return await generateQuizWithOpenAI(theme, type, questionCount, difficulty, request.timeLimit);
     }
   } catch (error) {
     console.error('Error generating quiz:', error);
@@ -36,7 +36,7 @@ export async function generateQuiz(request: CreateQuizRequest): Promise<Quiz> {
  * Generates a quiz from a document URL using RAG
  */
 export async function generateQuizFromDocument(request: CreateQuizRequest): Promise<Quiz> {
-  const { documentUrl, type, questionCount, aiService } = request;
+  const { documentUrl, type, questionCount, aiService, difficulty } = request;
   
   // Validate inputs
   if (!documentUrl) {
@@ -53,7 +53,7 @@ export async function generateQuizFromDocument(request: CreateQuizRequest): Prom
   
   try {
     // Process document and generate quiz
-    return await generateQuizFromDocumentContent(documentUrl, type, questionCount, aiService as AiService, request.timeLimit);
+    return await generateQuizFromDocumentContent(documentUrl, type, questionCount, aiService as AiService, request.timeLimit, difficulty);
   } catch (error) {
     console.error('Error generating quiz from document:', error);
     throw new Error('Failed to generate quiz from document');

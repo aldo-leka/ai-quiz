@@ -59,8 +59,6 @@ Include exactly ${count} themes in your response. Make sure your JSON is valid w
         },
       ]
     });
-
-    console.log('response', response);
     
     // Parse the response
     const responseContent = response.choices[0].message.content;
