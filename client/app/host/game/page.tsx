@@ -323,7 +323,7 @@ export default function HostGame() {
     // Store as both socket.id and 'host' to make it resilient to reconnection
     setPlayerAnswers(prev => ({
       ...prev,
-      [socket.id]: answerToSubmit,
+      [socket.id as string]: answerToSubmit,
       'host': answerToSubmit // Use a constant key that won't change when socket reconnects
     }));
     
