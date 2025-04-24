@@ -27,6 +27,7 @@ model Quiz {
   description  String
   theme        String
   type         String
+  difficulty   String         @default("intermediate")  // Difficulty level (beginner, intermediate, advanced)
   time_limit   Int?           // Time limit in seconds for each question
   questions    Question[]
   created_by   User           @relation(fields: [created_by_id], references: [id])

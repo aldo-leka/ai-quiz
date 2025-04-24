@@ -55,6 +55,7 @@ export interface Quiz {
   description: string;
   theme: string;
   type: QuizType;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
   questions: QuizQuestion[];
   createdById: string;
   createdAt: string;

@@ -45,8 +45,6 @@ export async function generateQuizWithOpenAI(
     // Trim any whitespace
     responseContent = responseContent.trim();
     
-    console.log("Parsing JSON response:", responseContent);
-    
     const quizData = JSON.parse(responseContent);
     
     // Create quiz object from response
@@ -56,6 +54,7 @@ export async function generateQuizWithOpenAI(
       description: quizData.description || `A ${type} quiz about ${theme}`,
       theme,
       type,
+      difficulty,
       questions: quizData.questions.map((q: any) => transformQuestion(q, type)),
       createdById: '',  // This will be filled in by the server
       createdAt: new Date().toISOString(),

@@ -56,6 +56,7 @@ export async function generateQuizWithClaude(
       description: quizData.description || `A ${type} quiz about ${theme}`,
       theme,
       type,
+      difficulty,
       questions: quizData.questions.map((q: any) => transformQuestion(q, type)),
       createdById: '',  // This will be filled in by the server
       createdAt: new Date().toISOString(),
