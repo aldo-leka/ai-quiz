@@ -18,6 +18,7 @@ export default function CreateQuiz() {
   const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner'); // Default: beginner
   const [selectedTheme, setSelectedTheme] = useState<QuizTheme | null>(null);
   const [suggestedThemes, setSuggestedThemes] = useState<QuizTheme[]>([]);
+  const [customThemeInput, setCustomThemeInput] = useState(''); // Custom theme input
   const [customDocumentUrl, setCustomDocumentUrl] = useState('');
   const [useCustomDocument, setUseCustomDocument] = useState(false);
   const [timeLimit, setTimeLimit] = useState(30); // Default time limit: 30 seconds
@@ -30,10 +31,11 @@ export default function CreateQuiz() {
         setIsLoading(true);
         const { generateThemes } = await import('@/lib/api');
         
-        // Get themes for popular categories
+        // Get themes for popular categories (no specific category)
         const themesData = await generateThemes({
           count: 4,
-          audience: 'mixed'
+          audience: 'mixed',
+          category: ''
         });
         
         if (themesData && themesData.themes) {
@@ -197,7 +199,8 @@ export default function CreateQuiz() {
                   // Get new random themes
                   const themesData = await generateThemes({
                     count: 4,
-                    audience: 'mixed'
+                    audience: 'mixed',
+                    category: '' // No specific category for random themes
                   });
                   
                   if (themesData && themesData.themes) {
@@ -211,7 +214,7 @@ export default function CreateQuiz() {
                 }
               }}
               className="p-2 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200"
-              title="Generate new random themes"
+              title="Generate random themes"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -225,31 +228,97 @@ export default function CreateQuiz() {
             </button>
           </div>
           
+          {/* Custom theme input field */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Generate themes based on your idea
+            </label>
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={customThemeInput}
+                onChange={(e) => setCustomThemeInput(e.target.value)}
+                placeholder="Enter a theme idea"
+                className="flex-1 px-4 py-2 border rounded-md"
+                disabled={isLoading}
+              />
+              <button
+                onClick={async () => {
+                  if (!customThemeInput.trim()) {
+                    alert('Please enter a theme idea first.');
+                    return;
+                  }
+                  
+                  try {
+                    setIsLoading(true);
+                    const { generateThemes } = await import('@/lib/api');
+                    
+                    // Get themes based on the custom input
+                    const themesData = await generateThemes({
+                      count: 4,
+                      audience: 'mixed',
+                      category: customThemeInput.trim()
+                    });
+                    
+                    if (themesData && themesData.themes) {
+                      setSuggestedThemes(themesData.themes);
+                    }
+                  } catch (error) {
+                    console.error('Error generating themes from custom input:', error);
+                    alert('Failed to generate themes. Please try again.');
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 whitespace-nowrap disabled:bg-indigo-300"
+                disabled={isLoading || !customThemeInput.trim()}
+              >
+                Generate
+              </button>
+            </div>
+          </div>
+          
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {suggestedThemes.map((theme, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setSelectedTheme(theme);
-                    setUseCustomDocument(false);
-                  }}
-                  className={`p-4 border-2 rounded-lg text-left flex ${selectedTheme === theme ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200'}`}
-                >
-                  {theme.imageUrl && (
-                    <div className="mr-3">
-                      <div className="w-16 h-16 rounded bg-gray-200 overflow-hidden">
-                        <img src={theme.imageUrl} alt={theme.title} className="w-full h-full object-cover" />
+            {isLoading ? (
+              <div className="text-center py-8">
+                <svg className="animate-spin h-8 w-8 mx-auto mb-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-lg font-medium text-gray-700">Generating themes{customThemeInput ? ` based on "${customThemeInput}"` : ''}...</p>
+                <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {suggestedThemes.map((theme, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedTheme(theme);
+                      setUseCustomDocument(false);
+                    }}
+                    className={`p-4 border-2 rounded-lg text-left flex ${selectedTheme === theme ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200'}`}
+                  >
+                    {theme.imageUrl && (
+                      <div className="mr-3">
+                        <div className="w-16 h-16 rounded bg-gray-200 overflow-hidden">
+                          <img src={theme.imageUrl} alt={theme.title} className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-medium">{theme.title}</div>
+                      <div className="text-sm text-gray-600 mt-1">{theme.description}</div>
+                      <div className="mt-2">
+                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${getDifficultyStyles(theme.audience)}`}>
+                          {formatDifficulty(theme.audience)}
+                        </span>
                       </div>
                     </div>
-                  )}
-                  <div>
-                    <div className="font-medium">{theme.title}</div>
-                    <div className="text-sm text-gray-600 mt-1">{theme.description}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
+            )}
             
             <div className="mt-6">
               <button
@@ -515,5 +584,19 @@ function formatDifficulty(difficulty: string): string {
     case 'intermediate': return 'Intermediate';
     case 'advanced': return 'Advanced';
     default: return difficulty;
+  }
+}
+
+// Get appropriate CSS classes for each difficulty level
+function getDifficultyStyles(difficulty: string): string {
+  switch(difficulty) {
+    case 'beginner':
+      return 'bg-green-100 text-green-800';
+    case 'intermediate':
+      return 'bg-amber-100 text-amber-800';
+    case 'advanced':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-amber-100 text-amber-800';
   }
 }
