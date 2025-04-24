@@ -13,9 +13,7 @@ import { createTRPCContext, appRouter } from './api/trpc';
 
 const PORT = process.env.PORT || 3001;
 // Parse CORS origins - can be a comma-separated string for multiple origins
-const CORS_ORIGIN = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : 'http://localhost:3000';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
 
 // Create Express app
 const app = express();
