@@ -7,9 +7,7 @@
     "build": "tsc -b",
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
-    "typecheck": "tsc --noEmit",
-    "create-env": "node scripts/create-env.js",
-    "build-with-deps": "npm run build -w shared && npm run build -w quiz-generator && npm run create-env && npm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.9.1",
