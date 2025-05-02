@@ -1,5 +1,5 @@
 import { Express, Request, Response } from 'express';
-import { getGameSessionManager } from '../ws/connection';
+import { getActiveGamesForUser } from '../ws/gameMonolith'
 import { requireAuth } from '../../auth/middleware';
 
 export function setupGameRoutes(app: Express) {
@@ -17,11 +17,11 @@ export function setupGameRoutes(app: Express) {
       
       // Temporarily skip game session checks due to initialization issues
       /*
-      // Get game session manager
-      const gameSessionManager = getGameSessionManager();
+      // Get the game session
+      const { getGameSession } = require('../ws/gameMonolith');
       
       // Verify the game exists and is using this quiz
-      const gameSession = await gameSessionManager.getGameSession(gameCode);
+      const gameSession = await getGameSession(gameCode);
       
       if (!gameSession) {
         return res.status(404).json({ error: 'Game not found' });
@@ -61,8 +61,7 @@ export function setupGameRoutes(app: Express) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
       
-      const gameSessionManager = getGameSessionManager();
-      const activeGames = await gameSessionManager.getActiveGamesForUser(userId);
+      const activeGames = await getActiveGamesForUser(userId);
       
       // Transform to a simplified format for the client
       const simplifiedGames = activeGames.map(game => ({

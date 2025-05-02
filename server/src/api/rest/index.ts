@@ -13,9 +13,8 @@ export function setupRoutes(app: Express) {
   // Debug route to get all active game sessions
   app.get('/debug/sessions', (req, res) => {
     try {
-      const { getGameSessionManager } = require('../ws/connection');
-      const gameSessionManager = getGameSessionManager();
-      const sessions = gameSessionManager.getAllSessions();
+      const { getAllSessions } = require('../ws/gameMonolith');
+      const sessions = getAllSessions();
       
       // Calculate session age and inactivity time
       const now = new Date().getTime();
