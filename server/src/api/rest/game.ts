@@ -1,5 +1,5 @@
 import { Express, Request, Response } from 'express';
-import { getActiveGamesForUser } from '../ws/gameMonolith'
+import { getActiveGamesForUser, getGameSession } from '../ws/gameMonolith'
 import { requireAuth } from '../../auth/middleware';
 
 export function setupGameRoutes(app: Express) {
@@ -15,11 +15,6 @@ export function setupGameRoutes(app: Express) {
         return res.status(400).json({ error: 'Missing required parameters' });
       }
       
-      // Temporarily skip game session checks due to initialization issues
-      /*
-      // Get the game session
-      const { getGameSession } = require('../ws/gameMonolith');
-      
       // Verify the game exists and is using this quiz
       const gameSession = await getGameSession(gameCode);
       
@@ -30,7 +25,6 @@ export function setupGameRoutes(app: Express) {
       if (gameSession.currentQuizId !== quizId) {
         return res.status(403).json({ error: 'Unauthorized access to quiz' });
       }
-      */
       
       // Import quiz functions
       const { getQuizById } = await import('../../db/quizzes');

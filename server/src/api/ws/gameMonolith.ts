@@ -234,7 +234,7 @@ function createGameSession(
 /**
  * Get a game session by its code
  */
-async function getGameSession(code: string): Promise<GameSession | undefined> {
+export async function getGameSession(code: string): Promise<GameSession | undefined> {
   // First check memory
   let session = sessions.get(code);
   
@@ -282,14 +282,14 @@ function updateSessionActivity(gameCode: string): void {
 /**
  * Get all active sessions
  */
-function getAllSessions(): GameSession[] {
+export function getAllSessions(): GameSession[] {
   return Array.from(sessions.values());
 }
 
 /**
  * Get active games for a user
  */
-async function getActiveGamesForUser(userId: string): Promise<GameSession[]> {
+export async function getActiveGamesForUser(userId: string): Promise<GameSession[]> {
   if (!userId) return [];
   
   const activeSessions: GameSession[] = [];
